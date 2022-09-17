@@ -1,9 +1,11 @@
 import express from "express";
 import { graphqlHTTP } from "express-graphql";
-import { buildSchema } from "graphql";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDatabase from "./config/database.js";
+
+import schema from "./graphql/schema.js";
+import rootValue from "./graphql/rootValue.js";
 
 dotenv.config();
 
@@ -12,15 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-connectDatabase()
-
-const schema = buildSchema(`
-    type Query {
-        hello: String
-    }
-`);
-
-const rootValue = { hello: ()=> 'hello world!' };
+connectDatabase();
 
 app.use('/graphql', graphqlHTTP({
     schema,
