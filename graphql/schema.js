@@ -27,15 +27,53 @@ const schema = buildSchema(`
         id: ID!
         name: String!
         photo: String!
-        owner: User!
+        owner: User
+    }
+
+    input ExchangeInput {
+        name: String!
+        contact: String!
+        toyToExchange: String!
+        exchangeTo: String!
+        photo: String!
+    }
+
+    type Exchange {
+        id: ID!
+        name: String!
+        contact: String!
+        toyToExchange: String!
+        exchangeTo: String!
+        photo: String!
+        status: String!
+    }
+
+    type PageInfo {
+        page: Int
+        limit: Int
+        status: String
+    }
+
+    input PageInput {
+        page: Int
+        limit: Int
+        status: String
+    }
+
+    type Page {
+        totalCount: Int
+        exchanges: [Exchange]
+        pageInformation: PageInfo
     }
 
     type Query {
         user(id: ID!): User
-        users: [User]!
+        users: [User]
         loginUser(email: String!, password: String!): User
-        toys: [Toy]!
-        toy(id: ID!): Toy!
+        toys: [Toy]
+        toy(id: ID!): Toy
+        exchanges(pageInput: PageInput): Page
+        exchange(id: ID!): Exchange
     }
 
     type Mutation {
@@ -44,6 +82,9 @@ const schema = buildSchema(`
         updateToy(id: ID!,name: String, photo: String): Toy
         updateOwnerToy(id: ID!, owner: String!): Toy
         deleteToy(id: ID!):Toy
+        createExchange(exchangeInput: ExchangeInput): Exchange
+        desactivateExchange(id: ID!): Exchange
+        deleteExchange(id: ID!): Exchange
     }
 `);
 

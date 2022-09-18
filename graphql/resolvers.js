@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import Toy from "../models/Toy.js";
+import Exchange from "../models/Exchange.js";
 
 export const users = ()=> User.find();
 
@@ -37,28 +38,26 @@ export const loginUser = async(args) => {
 
 }
 
-// TOY Controllers
-export const toys = ()=> Toy.find();
+export const toys = ()=> Toy.find().populate("owner");
 
-export const toy = (args)=> Toy.findById(args.id);
+export const toy = (args)=> Toy.findById(args.id).populate("owner");
 
 export const createToy = async(args)=> {
     const { name, photo, owner } = args.toyInput;
 
     const toy = new Toy({ name, photo, owner });
-    await toy.save();
 
     // update user toys
     const user = await User.findById(owner);
     user.toys.push(toy);
     await user.save();
 
-    return toy;
+    return toy.save();
 }
 
 export const updateToy = async(args)=> {
     const { id, name, photo } = args;
-    return Toy.findByIdAndUpdate(id,{ name, photo });
+    return Toy.findByIdAndUpdate(id,{ name, photo },{ new: true });
 }
 
 export const updateOwnerToy = async(args) =>{
@@ -86,4 +85,52 @@ export const deleteToy = async(args)=> {
     await toy.owner.toys.pull(toy);
     await toy.owner.save();
     return toy;
+}
+
+export const exchange = (args) => {
+    const id = args.id;
+    return Exchange.findById(id);
+}
+
+export const exchanges = async(args)=> {
+    const page = args.page -1 || 0;
+    const limit = args.limit || 2;
+    const status = args.status || "activate";
+
+    const exchanges = await Exchange.find()
+                                    .where({status})
+                                    .skip(page * limit)
+                                    .limit(limit);
+
+    const totalCount = await Exchange.countDocuments({status});
+
+    return {
+        totalCount,
+        exchanges,
+        pageInformation: { page: page + 1, limit, status}
+    }
+}
+
+export const createExchange = async(args)=> {
+    const { name, contact, toyToExchange, exchangeTo,photo } = args.exchangeInput;
+    const user = await User.findOne({ name: name}).populate("toys");
+    
+    // check if toy to exchange really exist in user's toy
+    const foundToyInUser = user.toys.some(el => el.name === toyToExchange);
+
+    if(foundToyInUser){
+        const exchange = new Exchange({
+            name, contact, toyToExchange, exchangeTo, photo
+        });
+        return exchange.save();
+    }
+    return;
+}
+
+export const desactivateExchange = async(args)=>{
+    const id = args.id;
+    const exchange = await Exchange.findByIdAndUpdate(id,{
+        status: "desactivate"
+    },{ new: true });
+    return exchange.save();
 }
