@@ -72,6 +72,7 @@ const schema = buildSchema(`
         loginUser(email: String!, password: String!): User
         toys: [Toy]
         toy(id: ID!): Toy
+        toyByUser(userId: ID!): [Toy]
         exchanges(pageInput: PageInput): Page
         exchange(id: ID!): Exchange
     }

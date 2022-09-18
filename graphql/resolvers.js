@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import Toy from "../models/Toy.js";
 import Exchange from "../models/Exchange.js";
 
-export const users = ()=> User.find();
+export const users = ()=> User.find().populate("toys");
 
 export const user = (args)=> User.findById(args.id).populate("toys");
 
@@ -41,6 +41,8 @@ export const loginUser = async(args) => {
 export const toys = ()=> Toy.find().populate("owner");
 
 export const toy = (args)=> Toy.findById(args.id).populate("owner");
+
+export const toyByUser = (args) => Toy.find(args.userId);
 
 export const createToy = async(args)=> {
     const { name, photo, owner } = args.toyInput;
@@ -133,4 +135,9 @@ export const desactivateExchange = async(args)=>{
         status: "desactivate"
     },{ new: true });
     return exchange.save();
+}
+
+export const deleteExchange = async(args)=>{
+    const id = args.id;
+    return await Exchange.findByIdAndRemove(id);
 }
